@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Desktop AI Workers for Danish Businesses</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0b1220;
+    --bg2: #121a2b;
+    --card: #162033;
+    --ink: #e8eef7;
+    --muted: #9aa8bc;
+    --accent: #5b8cff;
+    --accent2: #3dd6c6;
+    --warn: #f0b429;
+    --line: rgba(255,255,255,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--bg); color: var(--ink); font-family: "DM Sans", system-ui, sans-serif; }
+  .deck { height: 100%; overflow: hidden; position: relative; }
+  .slide {
+    position: absolute; inset: 0; padding: 56px 72px 72px;
+    display: none; flex-direction: column; justify-content: center;
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(91,140,255,0.18), transparent 55%),
+      radial-gradient(900px 500px at 100% 100%, rgba(61,214,198,0.10), transparent 50%),
+      var(--bg);
+  }
+  .slide.active { display: flex; animation: in .35s ease; }
+  @keyframes in { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: none;} }
+  .kicker { color: var(--accent2); font-size: 13px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 18px; }
+  h1 { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; font-size: clamp(42px, 5.5vw, 64px); line-height: 1.08; max-width: 15ch; }
+  h2 { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; font-size: clamp(34px, 4.2vw, 48px); line-height: 1.15; margin-bottom: 28px; max-width: 22ch; }
+  .sub { color: var(--muted); font-size: 20px; margin-top: 22px; max-width: 46ch; line-height: 1.45; }
+  .meta { margin-top: 36px; color: var(--muted); font-size: 14px; display: flex; gap: 18px; flex-wrap: wrap; }
+  .meta span { border: 1px solid var(--line); padding: 8px 12px; border-radius: 999px; background: rgba(255,255,255,0.03); }
+  ul { list-style: none; display: grid; gap: 14px; max-width: 70ch; }
+  li { position: relative; padding-left: 22px; color: var(--ink); font-size: 20px; line-height: 1.4; }
+  li::before { content: ""; position: absolute; left: 0; top: .65em; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; max-width: 980px; }
+  .grid.three { grid-template-columns: repeat(3, minmax(0,1fr)); }
+  .card {
+    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+    border: 1px solid var(--line); border-radius: 16px; padding: 22px 22px 20px;
+  }
+  .card h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--accent2); }
+  .card p { color: var(--muted); font-size: 15px; line-height: 1.45; }
+  .steps { counter-reset: s; display: grid; gap: 12px; max-width: 820px; }
+  .steps li { padding: 16px 18px 16px 64px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
+  .steps li::before {
+    counter-increment: s; content: counter(s); left: 18px; top: 50%; transform: translateY(-50%);
+    width: 28px; height: 28px; border-radius: 8px; background: var(--accent); color: white;
+    font-size: 13px; font-weight: 700; display: grid; place-items: center;
+  }
+  .table { width: min(900px, 100%); border-collapse: collapse; font-size: 16px; }
+  .table th, .table td { text-align: left; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  .table th { color: var(--muted); font-weight: 500; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; }
+  .pill { display: inline-block; background: rgba(91,140,255,.15); color: #b9ceff; border: 1px solid rgba(91,140,255,.35); padding: 4px 10px; border-radius: 999px; font-size: 13px; }
+  .split { display: grid; grid-template-columns: 1.1fr .9fr; gap: 28px; align-items: start; }
+  .nav {
+    position: fixed; right: 24px; bottom: 20px; z-index: 20;
+    display: flex; gap: 10px; align-items: center; color: var(--muted); font-size: 13px;
+  }
+  .nav button {
+    background: var(--card); color: var(--ink); border: 1px solid var(--line);
+    width: 40px; height: 40px; border-radius: 10px; cursor: pointer; font-size: 18px;
+  }
+  .nav button:hover { border-color: var(--accent); }
+  .progress { position: fixed; left: 0; top: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--accent2)); z-index: 30; width: 0; }
+  .footnote { margin-top: 28px; color: var(--muted); font-size: 13px; max-width: 70ch; }
+  .big { font-family: "Instrument Serif", Georgia, serif; font-size: clamp(28px, 3.5vw, 40px); line-height: 1.25; max-width: 22ch; }
+  .warn { color: var(--warn); }
+  @media (max-width: 900px) {
+    .slide { padding: 36px 28px 80px; }
+    .grid, .grid.three, .split { grid-template-columns: 1fr; }
+    h1 { max-width: none; }
+  }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="deck" id="deck">
+
+  <section class="slide active">
+    <div class="kicker">Business plan · Conceptual · Sep 2026</div>
+    <h1>Desktop AI Workers for Danish Businesses</h1>
+    <p class="sub">Consult first. Deploy single-purpose automation assistants. Earn on setup and recurring improvement — not a mega-bot.</p>
+    <div class="meta">
+      <span>Sales-led in Denmark</span>
+      <span>Build-led setup & tooling</span>
+      <span>One job per worker</span>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">Why this conversation</div>
+    <h2>The moment</h2>
+    <ul>
+      <li>Desktop AI agents are almost unused in Denmark — a real <strong>head start</strong>.</li>
+      <li>Live proof already exists: LinkedIn sales workers that find leads, engage, message, and book calls.</li>
+      <li>“Gotta make money on this — now is the time.”</li>
+      <li>Models keep improving; setup burden falls as assistants get more autonomous.</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">Market</div>
+    <h2>The problem</h2>
+    <div class="grid">
+      <div class="card"><h3>Manual work still wins by default</h3><p>Most Danish SMEs still do prospecting, outreach, email, and ops by hand.</p></div>
+      <div class="card"><h3>AI is blocked at work</h3><p>Many employers lock consumer AI on work PCs — leaving only weak internal tools.</p></div>
+      <div class="card"><h3>Pressure without headcount</h3><p>Job cuts and lean teams create urgency for leverage without hiring another FTE.</p></div>
+      <div class="card"><h3>Token burn is real</h3><p>Power users hit weekly limits in days without caps, rules, and efficiency tuning.</p></div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">Solution</div>
+    <h2>Consult → custom workers → recurring care</h2>
+    <ul>
+      <li>Enter as <strong>consultants</strong> — understand the business before installing anything.</li>
+      <li>Deploy <strong>custom, single-purpose desktop AI workers</strong> — not one mega-bot.</li>
+      <li>Client keeps the worker; we sell setup + ongoing updates and token tuning.</li>
+      <li>Later: free marketplace templates, with paid services on top.</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">Delivery</div>
+    <h2>How it works</h2>
+    <ol class="steps">
+      <li>Discovery consult — map workflows, tools, and constraints.</li>
+      <li>Design one job per worker (sales, email, account management, market intel).</li>
+      <li>Install & integrate — desktop agent, rules/workflows, efficiency review.</li>
+      <li>Cap and tune token usage so the worker stays predictable.</li>
+      <li>Ongoing MRR — model upgrades, prompt/script updates; later meta-workers for maintenance.</li>
+    </ol>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">Offer</div>
+    <h2>Example workers</h2>
+    <table class="table">
+      <thead><tr><th>Worker</th><th>One job</th></tr></thead>
+      <tbody>
+        <tr><td>Sales / lead-gen</td><td>Scout prospects, outreach, engage, book calls</td></tr>
+        <tr><td>Email / secretary</td><td>Triage and handle inbox routines</td></tr>
+        <tr><td>Account management</td><td>Ongoing client touchpoints</td></tr>
+        <tr><td>Daily market intel</td><td>Scan the company’s market; brief the team each day</td></tr>
+      </tbody>
+    </table>
+    <p class="footnote">Principle from the chat: memory/context is still limited — <span class="pill">one job per bot</span> wins.</p>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">ICP</div>
+    <h2>Who it’s for</h2>
+    <ul>
+      <li>Small Danish companies (e.g. construction and similar SMEs).</li>
+      <li>Owners/managers who feel sales & admin load but won’t hire another person yet.</li>
+      <li>Teams blocked from useful AI at work — need private desktop workers that fit their stack.</li>
+      <li class="warn">Not an employer pitch while a partner is on trial / fighting to keep a job.</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">Timing</div>
+    <h2>Why now</h2>
+    <div class="split">
+      <div>
+        <ul>
+          <li>Almost nobody in Denmark is doing this yet.</li>
+          <li>LinkedIn sales automation already feels production-ready for outreach.</li>
+          <li>Model trajectory points to more autonomous 24/7 workers soon.</li>
+          <li>Window: sell before the market catches up.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Partnership shape</h3>
+        <p><strong style="color:#e8eef7">He sells.</strong> Local relationships in Denmark.<br/><br/>
+        <strong style="color:#e8eef7">Partner builds.</strong> Setup, scripts, prompts, tooling.<br/><br/>
+        Start with a few design-partner SMEs; reuse playbooks after 1–2 clients.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">Economics</div>
+    <h2>Business model</h2>
+    <div class="grid">
+      <div class="card"><h3>Now</h3><p>Upfront consultation / setup fee + <strong style="color:#e8eef7">MRR</strong> for updates, new-model adjustments, and token-usage improvements.</p></div>
+      <div class="card"><h3>Value framing</h3><p>Debated in chat: ~50% of a person → ~10% → landed around <strong style="color:#e8eef7">~20% of a person</strong>, with higher leverage than a junior hire. No invented absolute prices.</p></div>
+      <div class="card"><h3>Token policy</h3><p>Reject open pay-per-use. Cap about <strong style="color:#e8eef7">$200–300 / week</strong>; overage → pay extra or wait for weekly reset. Teach efficiency so caps hold.</p></div>
+      <div class="card"><h3>Later</h3><p>Free public / marketplace bots → monetize deeper integration. Meta-workers maintain client workers to scale the hard MRR work.</p></div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">GTM</div>
+    <h2>Go-to-market</h2>
+    <ul>
+      <li>Sales-led by the Denmark partner; build-led by the technical partner.</li>
+      <li>First beachhead: small Danish companies with clear, repeatable workflows.</li>
+      <li>Story is easy to sell; maintenance is the hard part — and where recurring revenue lives.</li>
+      <li>After a couple of clients, reuse the same prompts/scripts for sales + secretary-style workers.</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">Operations</div>
+    <h2>Ops & delivery</h2>
+    <div class="grid three">
+      <div class="card"><h3>Playbooks</h3><p>Reuse setup after early clients. Sales bot + secretary bot = a few platforms, not endless custom software.</p></div>
+      <div class="card"><h3>Efficiency layer</h3><p>Rules and workflows first; audit/review workers before scaling token spend.</p></div>
+      <div class="card"><h3>Maintenance path</h3><p>Acknowledged as hard. Plan meta-bots for client-bot upkeep so MRR stays deliverable.</p></div>
+    </div>
+    <p class="footnote">Status: conceptual only — no live client engagements yet.</p>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">Reality check</div>
+    <h2>Risks</h2>
+    <ul>
+      <li><strong>Maintenance load</strong> vs. the MRR promise.</li>
+      <li><strong>Client token usage</strong> discipline and overage friction.</li>
+      <li>No native paid bot marketplace → services model is required.</li>
+      <li>Employer AI bans / compliance if clients are regulated.</li>
+      <li>Don’t pitch a partner’s current employer while trial / job security is fragile.</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">Ask</div>
+    <h2>Next steps</h2>
+    <ol class="steps">
+      <li>Lock packaging: consult fee bands + MRR tiers (numbers TBD — not invented here).</li>
+      <li>Build one reusable sales-worker playbook (lead → outreach → book call) with a weekly token cap.</li>
+      <li>Pick 2–3 Danish SME warm intros — not the current employer while on trial.</li>
+      <li>Draft a simple agreement: setup + MRR + token cap / overage.</li>
+      <li>Stay conceptual until the first design partner closes.</li>
+    </ol>
+  </section>
+
+  <section class="slide">
+    <div class="kicker">Close</div>
+    <p class="big">Desktop AI workers, one job at a time.</p>
+    <p class="sub">Denmark is early. Consult → custom workers → recurring improvement. Sell the outcome; keep the maintenance — that’s the business.</p>
+    <div class="meta">
+      <span>Source: Telegram · mr general manager · 25–29 Sep 2026</span>
+      <span>Conceptual partner deck</span>
+    </div>
+  </section>
+
+</div>
+<div class="nav">
+  <span id="count">1 / 14</span>
+  <button type="button" id="prev" aria-label="Previous">←</button>
+  <button type="button" id="next" aria-label="Next">→</button>
+</div>
+<script>
+  const slides=[...document.querySelectorAll('.slide')];
+  let i=0;
+  const count=document.getElementById('count');
+  const progress=document.getElementById('progress');
+  function show(n){
+    i=(n+slides.length)%slides.length;
+    slides.forEach((s,idx)=>s.classList.toggle('active', idx===i));
+    count.textContent=`${i+1} / ${slides.length}`;
+    progress.style.width=`${((i+1)/slides.length)*100}%`;
+  }
+  document.getElementById('prev').onclick=()=>show(i-1);
+  document.getElementById('next').onclick=()=>show(i+1);
+  window.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key===' ' || e.key==='PageDown') { e.preventDefault(); show(i+1); }
+    if(e.key==='ArrowLeft'||e.key==='PageUp') { e.preventDefault(); show(i-1); }
+  });
+  let tx=null;
+  window.addEventListener('touchstart',e=>{ tx=e.changedTouches[0].clientX; },{passive:true});
+  window.addEventListener('touchend',e=>{
+    if(tx==null) return;
+    const dx=e.changedTouches[0].clientX-tx;
+    if(Math.abs(dx)>40) show(i+(dx<0?1:-1));
+    tx=null;
+  },{passive:true});
+  show(0);
+</script>
+</body>
+</html>
